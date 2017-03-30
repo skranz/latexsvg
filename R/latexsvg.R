@@ -43,8 +43,7 @@ latexsvg = function(svg=paste0(readLines(file),collapse="\n"), file=NULL, outfil
     tags$script(type="text/javascript",
         "new Svg_MathJax().install();"
     ),
-    h4("An SVG"),
-    actionButton("saveBtn","save SVG"),
+    h4("Render Latex in SVG via Mathjax..."),
     div(id="svgdiv",
       HTML(svg)
     )

@@ -75,7 +75,7 @@ Svg_MathJax = (function() {
                 // get graphics nodes
                 var gnodes =
                     svgmath.getElementsByTagName('g')[0].cloneNode(true);
-                var fontsize = svgdest.getAttribute('font-size') || 13;
+                var fontsize = svgdest.getAttribute('font-size') || 12;
                 var scale = options.scale*fontsize;
                 var x =  +svgdest.getAttribute('x');
                 var y =  +svgdest.getAttribute('y');
