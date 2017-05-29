@@ -18,6 +18,60 @@
  * limitations under the License.
  */
 
+Svg_MathJax_BackToSVG = function(items, options) {
+  function forEach(x,f) {
+      var n = x.length; for (var i = 0; i < n; ++i) { f(x[i]); }
+  }
+
+  forEach(items, function(x) {
+    try{
+      var svgdest = x[0];
+      var mathjaxdiv = x[1];
+      var justification = x[2];
+      var MathJaxSVG =  mathjaxdiv.getElementsByClassName('MathJax_SVG')[0];
+      var svgmath = MathJaxSVG.getElementsByTagName('svg')[0];
+      var svgmathinfo = {
+        width: svgmath.viewBox.baseVal.width,
+        height: svgmath.viewBox.baseVal.height
+      };
+      // get graphics nodes
+      var gnodes =
+          svgmath.getElementsByTagName('g')[0].cloneNode(true);
+      var fontsize = svgdest.getAttribute('font-size') || 12;
+      var scale = options.scale*fontsize;
+      var x =  +svgdest.getAttribute('x');
+      var y =  +svgdest.getAttribute('y');
+
+      var x0 = x;
+      var y0 = y;
+      var x1;
+      switch (justification.toUpperCase())
+      {
+        case 'L': x1 = 0; break;
+        case 'R': x1 = -svgmathinfo.width; break;
+        case 'C': // default to center
+        default:  x1 = -svgmathinfo.width * 0.5; break;
+      }
+      var y1 = svgmathinfo.height*0;
+      gnodes.setAttribute('transform', 'translate('+x0+' '+y0+')'
+           +' scale('+scale+') translate('+x1+' '+y1+')'
+           +' matrix(1 0 0 -1 0 0)');
+      if (options.escape_clip)
+          svgdest.parentNode.removeAttribute('clip-path');
+      svgdest.parentNode.replaceChild(gnodes,svgdest);
+    } catch(e) {
+
+    }
+  });
+  // remove the temporary items
+  var mathbucket = document.getElementById('mathjax_svg_bucket');
+  mathbucket.parentNode.removeChild(mathbucket);
+  $.event.trigger({
+    type: "EndSVGLatex"
+  });
+
+};
+
 Svg_MathJax = (function() {
     // apply a function to elements of an array x
     function forEach(x,f) {
@@ -60,53 +114,8 @@ Svg_MathJax = (function() {
             });
         });
         MathJax.Hub.Register.StartupHook("End Typeset",function() {
-            forEach(items, function(x) {
-              try{
-                var svgdest = x[0];
-                var mathjaxdiv = x[1];
-                var justification = x[2];
-                var svgmath =
-                     mathjaxdiv.getElementsByClassName('MathJax_SVG')[0]
-                               .getElementsByTagName('svg')[0];
-                var svgmathinfo = {
-                  width: svgmath.viewBox.baseVal.width,
-                  height: svgmath.viewBox.baseVal.height
-                };
-                // get graphics nodes
-                var gnodes =
-                    svgmath.getElementsByTagName('g')[0].cloneNode(true);
-                var fontsize = svgdest.getAttribute('font-size') || 12;
-                var scale = options.scale*fontsize;
-                var x =  +svgdest.getAttribute('x');
-                var y =  +svgdest.getAttribute('y');
-
-                var x0 = x;
-                var y0 = y;
-                var x1;
-                switch (justification.toUpperCase())
-                {
-                case 'L': x1 = 0; break;
-                case 'R': x1 = -svgmathinfo.width; break;
-                case 'C': // default to center
-                default:  x1 = -svgmathinfo.width * 0.5; break;
-                }
-                var y1 = svgmathinfo.height*0;
-                gnodes.setAttribute('transform', 'translate('+x0+' '+y0+')'
-                     +' scale('+scale+') translate('+x1+' '+y1+')'
-                     +' matrix(1 0 0 -1 0 0)');
-                if (options.escape_clip)
-                    svgdest.parentNode.removeAttribute('clip-path');
-                svgdest.parentNode.replaceChild(gnodes,svgdest);
-              } catch(e) {
-
-              }
-            });
-            // remove the temporary items
-            var mathbucket = document.getElementById('mathjax_svg_bucket');
-            mathbucket.parentNode.removeChild(mathbucket);
-            $.event.trigger({
-	            type: "EndSVGLatex"
-            });
+          setTimeout(function(){Svg_MathJax_BackToSVG(items, options)}, 1000);
+          //Svg_MathJax_BackToSVG(items, options);
         });
     }
 
